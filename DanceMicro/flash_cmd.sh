@@ -1,0 +1,2 @@
+#!/bin/bash
+avrdude -c avr109 -p atmega32u4 -P /dev/ttyACM0 -U flash:w:DanceMicro.hex -v
