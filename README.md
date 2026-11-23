@@ -30,5 +30,9 @@ Follow sereni's [fsr-pad-guide](https://sereni.github.io/fsr-pad-guide/) to lear
 Here is an example wiring from the guide. 
 ![ExampleWiring](images/teensy_wiring.png)
 
+## Testing
+You should be able to see the joystick input descriptor when running evtest as such: 
+![EVTest](images/evtest.png)
+
 ## Credit
 Built on [LUFA](lufa). Descriptor files copied from LUFA's joystick demo. 
