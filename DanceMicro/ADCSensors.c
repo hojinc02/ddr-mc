@@ -1,7 +1,33 @@
 #include "ADCSensors.h"
 
 #define NUM_SENSORS 4
-static const uint8_t sensor_channel[NUM_SENSORS] = {7, 6, 5, 4};
+#define PINS(X) X(A0, 7) X(A1, 6) X(A2, 5) X(A3, 4)
+
+static const uint8_t sensor_channel[] = {
+#define X(pin, ch) ch,
+    PINS(X)
+#undef X
+};
+_Static_assert(sizeof sensor_channel / sizeof sensor_channel[0] == NUM_SENSORS,
+               "PINS count must equal NUM_SENSORS");
+
+#define X(pin, ch)                                                \
+  _Static_assert(RELEASE_THRESHOLD_##pin < PRESS_THRESHOLD_##pin, \
+                 "RELEASE_THRESHOLD_" #pin                        \
+                 " must be lower than PRESS_THRESHOLD_" #pin);
+PINS(X)
+#undef X
+
+static const uint16_t press_thresholds[] = {
+#define X(pin, ch) PRESS_THRESHOLD_##pin,
+    PINS(X)
+#undef X
+};
+static const uint16_t release_thresholds[] = {
+#define X(pin, ch) RELEASE_THRESHOLD_##pin,
+    PINS(X)
+#undef X
+};
 
 void adc_init(void) {
   ADMUX = (1 << REFS0);  // Use 5V source for reference voltage
@@ -25,14 +51,15 @@ static uint16_t adc_read(uint8_t ch) {
   return ADC;  // 16-bit analog read result
 }
 
-uint8_t scan_sensors(void) { 
-  static uint8_t state; // Current panels pressed state (last 4 bits for 4 panel)
+uint8_t scan_sensors(void) {
+  static uint8_t
+      state;  // Current panels pressed state (last 4 bits for 4 panel)
   // Persistent state for double threshold to work
   for (uint8_t i = 0; i < NUM_SENSORS; i++) {
     uint16_t v = adc_read(sensor_channel[i]);
-    if (v >= PRESS_THRESHOLD){
+    if (v >= press_thresholds[i]) {
       state |= (1 << i);
-    } else if (v <= RELEASE_THRESHOLD) {
+    } else if (v <= release_thresholds[i]) {
       state &= ~(1 << i);
     }
   }

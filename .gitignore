@@ -10,3 +10,4 @@
 *.bak
 *.class
 *.pdf
+build.log
